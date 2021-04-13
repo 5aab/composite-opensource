@@ -26,4 +26,7 @@
         <COLUMN name="cover_glass_items" label = "cover_glass_items" type="String"/>
         <COLUMN name="cover_plastic_items" label = "cover_plastic_items" type="String"/>
     </SOURCE>
+    <JOINS>
+        <JOIN fromSource="car" toSource = "insurance" fromColumn="insurance_id" toColumn="id"/>
+    </JOINS>
 </DATASOURCE>
