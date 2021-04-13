@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<DATASOURCE>
+    <SOURCE name="car" type="oracle-db">
+        <COLUMN name="name" label = "name" type="String"/>
+        <COLUMN name="id" label = "id" type="String"/>
+        <COLUMN name="color" label = "color" type="String"/>
+        <COLUMN name="seats" label = "seats" type="String"/>
+        <COLUMN name="capacity" label = "capacity" type="String"/>
+        <COLUMN name="engine" label = "engine" type="String"/>
+        <COLUMN name="power" label = "power" type="String"/>
+        <COLUMN name="mileage" label = "mileage" type="String"/>
+        <COLUMN name="max_speed" label = "max_speed" type="String"/>
+        <COLUMN name="sound_system" label = "sound_system" type="String"/>
+        <COLUMN name="owner_name" label = "owner_name" type="String"/>
+        <COLUMN name="insurance_id" label = "insurance_id" type="String"/>
+        <COLUMN name="showroom_price" label = "showroom_price" type="String"/>
+        <COLUMN name="on_road_price" label = "on_road_price" type="String"/>
+    </SOURCE>
+    <SOURCE name="insurance" type="rest-api">
+        <COLUMN name="name" label = "name" type="String"/>
+        <COLUMN name="id" label = "id" type="String"/>
+        <COLUMN name="cost" label = "cost" type="String"/>
+        <COLUMN name="expiry" label = "expiry" type="String"/>
+        <COLUMN name="starts_on" label = "starts_on" type="String"/>
+        <COLUMN name="cover_plastic_items" label = "cover_plastic_items" type="String"/>
+        <COLUMN name="cover_glass_items" label = "cover_glass_items" type="String"/>
+        <COLUMN name="cover_plastic_items" label = "cover_plastic_items" type="String"/>
+    </SOURCE>
+</DATASOURCE>
