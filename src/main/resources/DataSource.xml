@@ -15,6 +15,11 @@
         <COLUMN name="insurance_id" label = "insurance_id" type="String"/>
         <COLUMN name="showroom_price" label = "showroom_price" type="String"/>
         <COLUMN name="on_road_price" label = "on_road_price" type="String"/>
+        <DatabaseConnection>
+            <jdbcUrl></jdbcUrl>
+            <userId></userId>
+            <password></password>
+        </DatabaseConnection>
     </SOURCE>
     <SOURCE name="insurance" type="rest-api">
         <COLUMN name="name" label = "name" type="String"/>
@@ -25,8 +30,27 @@
         <COLUMN name="cover_plastic_items" label = "cover_plastic_items" type="String"/>
         <COLUMN name="cover_glass_items" label = "cover_glass_items" type="String"/>
         <COLUMN name="cover_plastic_items" label = "cover_plastic_items" type="String"/>
+        <RestConnection>
+            <url></url>
+            <userId></userId>
+            <password></password>
+            <authType></authType>
+        </RestConnection>
     </SOURCE>
     <JOINS>
         <JOIN fromSource="car" toSource = "insurance" fromColumn="insurance_id" toColumn="id"/>
     </JOINS>
+    <Compose>
+        <COLUMN sourceName= "car"  name="name" label = "car_name" type="String"/>
+        <COLUMN sourceName= "car"  name="id" label = "id" type="String"/>
+        <COLUMN sourceName= "car"  name="color" label = "color" type="String"/>
+        <COLUMN sourceName= "car"  name="seats" label = "seats" type="String"/>
+        <COLUMN sourceName= "car"  name="capacity" label = "capacity" type="String"/>
+        <COLUMN sourceName= "car"  name="engine" label = "engine" type="String"/>
+        <COLUMN sourceName= "car"  name="power" label = "power" type="String"/>
+        <COLUMN sourceName= "insurance"  name="name" label = "insurance_name" type="String"/>
+        <COLUMN sourceName= "insurance"  name="id" label = "id" type="String"/>
+        <COLUMN sourceName= "insurance"  name="cost" label = "cost" type="String"/>
+        <COLUMN sourceName= "insurance"  name="expiry" label = "expiry" type="String"/>
+    </Compose>
 </DATASOURCE>
