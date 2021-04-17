@@ -7,5 +7,5 @@ import java.util.Set;
 @Data
 public class Joins {
 
-    private Set<Join> joins;
+    private Set<Join> join;
 }

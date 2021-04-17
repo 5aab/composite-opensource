@@ -9,7 +9,7 @@ public class DataSource {
 
     private Compose compose;
 
-    private Set<Source> sources;
+    private Set<Source> source;
 
     private Joins joins;
 }
