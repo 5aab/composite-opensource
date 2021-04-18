@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <DATASOURCE>
-    <source name="car" type="oracle-db">
+    <source name="car" type="database">
         <column name="name" label="name" type="String"/>
         <column name="id" label="id" type="String"/>
         <column name="color" label="color" type="String"/>
@@ -22,7 +22,7 @@
             <password></password>
         </connection>
     </source>
-    <source name="insurance" type="rest-api">
+    <source name="insurance" type="rest">
         <column name="name" label="name" type="String"/>
         <column name="id" label="id" type="String"/>
 		<column name="type" label="insurance_type" type="String"/>
