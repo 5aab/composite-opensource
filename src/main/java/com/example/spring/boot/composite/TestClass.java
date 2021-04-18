@@ -51,9 +51,16 @@ public class TestClass {
 
     public static void main(String[] args) throws Exception {
         ObjectMapper mapper =new ObjectMapper();
-        Set<Condition> condition = Sets.newHashSet(MatchAll.create(Sets.newHashSet(WhereCondition.create("TRADE_DATE", ">=", Sets.newHashSet("2020-01-01")))));
-        Criteria criteria = Criteria.create(Sets.newHashSet(WhereCondition.create("TRADE_DATE", ">=", Sets.newHashSet("2020-01-01"))));
-        Query query = Query.create(criteria,"request_909876","mahajan", Sets.newHashSet("TRADE_DATE","NAME","ID"));
+        HashSet<WhereCondition> whereConditions = Sets.newHashSet(
+                WhereCondition.create("expiry", ">=", Sets.newHashSet("2020-01-01")),
+                WhereCondition.create("expiry", "<=", Sets.newHashSet("2020-01-05")),
+                WhereCondition.create("cost", "<=", Sets.newHashSet("1000000")),
+                WhereCondition.create("power", ">", Sets.newHashSet("786 hp")),
+                WhereCondition.create("seats", "=", Sets.newHashSet("2"))
+        );
+        Set<Condition> condition = Sets.newHashSet(MatchAll.create(whereConditions));
+        Criteria criteria = Criteria.create(whereConditions);
+        Query query = Query.create(criteria,"request_909876","mahajan", Sets.newHashSet("car_name","id","color","seats","capacity","engine","power","insurance_name","cost"));
         String queryJson = mapper.writeValueAsString(query);
         System.out.println(queryJson);
     }
