@@ -66,6 +66,10 @@
             <artifactId>stax2-api</artifactId>
             <version>4.2.1</version>
         </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

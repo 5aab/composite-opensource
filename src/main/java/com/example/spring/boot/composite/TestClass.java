@@ -63,5 +63,10 @@ public class TestClass {
         Query query = Query.create(criteria,"request_909876","mahajan", Sets.newHashSet("car_name","id","color","seats","capacity","engine","power","insurance_name","cost"));
         String queryJson = mapper.writeValueAsString(query);
         System.out.println(queryJson);
+
+        Query query1 = mapper.readValue(queryJson, Query.class);
+        System.out.println(query1.toString());
     }
+
+
 }
