@@ -25,12 +25,15 @@
     <source name="insurance" type="rest-api">
         <column name="name" label="name" type="String"/>
         <column name="id" label="id" type="String"/>
+		<column name="type" label="insurance_type" type="String"/>
         <column name="cost" label="cost" type="String"/>
         <column name="expiry" label="expiry" type="String"/>
+		<column name="insuredBy" label="insuredBy" type="String"/>
+		<column name="insuredOn" label="insuredOn" type="String"/>
         <column name="starts_on" label="starts_on" type="String"/>
         <column name="cover_plastic_items" label="cover_plastic_items" type="String"/>
         <column name="cover_glass_items" label="cover_glass_items" type="String"/>
-        <column name="cover_plastic_items" label="cover_plastic_items" type="String"/>
+        <column name="cover_interior_items" label="cover_interior_items" type="String"/>
         <connection type="restConnection">
             <url></url>
             <userId></userId>

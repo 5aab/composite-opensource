@@ -21,11 +21,13 @@ public class Insurance implements Serializable {
 
     @Column(name = "type", nullable = false)
     private String type;
-
     private String insuredBy;
-
     private LocalDate insuredOn;
+    private transient String formattedDate;
 
-    private transient  String formattedDate;
+    private String startsOn;
+    private String coverPlasticItems;
+    private String coverGlassItems;
+    private String coverInteriorItems;
 
 }
