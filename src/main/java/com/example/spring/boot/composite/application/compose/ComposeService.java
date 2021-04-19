@@ -2,13 +2,21 @@ package com.example.spring.boot.composite.application.compose;
 
 import com.example.spring.boot.composite.domain.datasource.ComposedColumn;
 import com.example.spring.boot.composite.domain.datasource.DataSource;
+import com.example.spring.boot.composite.domain.datasource.RestConnection;
 import com.example.spring.boot.composite.domain.query.Query;
 import com.example.spring.boot.composite.domain.query.WhereCondition;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.google.common.collect.Sets;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.CreateTableColumnStep;
 import org.jooq.DSLContext;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -32,6 +40,7 @@ public class ComposeService {
     private DSLContext create;
     private RestTemplate restTemplate;
     private XmlMapper xmlMapper;
+    //private ObjectMapper mapper;
 
 
     public String create() {
@@ -62,15 +71,38 @@ public class ComposeService {
         Set<ComposedColumn> composeColumns = findComposeColumns(allColumnsInQuery, dataSource);
         Map<String, List<ComposedColumn>> composeColumnsRestType = composeColumns.stream().filter(c->dataSource.isRestType(c.getSourceName())).collect(groupingBy(ComposedColumn::getSourceName));
         Map<String, List<ComposedColumn>> composeColumnsDatabaseType = composeColumns.stream().filter(Predicate.not(c->dataSource.isRestType(c.getSourceName()))).collect(groupingBy(ComposedColumn::getSourceName));
-        createTempTables(composeColumnsRestType);
+        Set<String> tempTables = createTempTables(composeColumnsRestType);
+        fillTablesWithData(tempTables, composeColumnsRestType, dataSource);
     }
 
-    private void createTempTables(Map<String, List<ComposedColumn>> composeColumnsRestType) {
+    private void fillTablesWithData(Set<String> tempTables, Map<String, List<ComposedColumn>> composeColumnsRestType, DataSource dataSource) {
+        for(String tempTable: tempTables) {
+            String tableKey = tempTable.substring(0, tempTable.indexOf("-"));
+            List<ComposedColumn> composedColumns = composeColumnsRestType.get(tableKey);
+            RestConnection connection = (RestConnection)dataSource.getConnectionDetails(tableKey);
+
+            ResponseEntity<String> response = restTemplate.exchange(connection.getUrl(), HttpMethod.GET, null,  new ParameterizedTypeReference<String>(){});
+            try {
+                ObjectMapper mapper = new ObjectMapper();
+                Set ma = mapper.readValue(response.getBody(), new TypeReference<Set<Map<String, Object>>>(){});
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+            log.info("here it is{}",response);
+
+        }
+    }
+
+    private Set<String> createTempTables(Map<String, List<ComposedColumn>> composeColumnsRestType) {
+        Set<String> tables = Sets.newHashSet();
         for(Map.Entry<String, List<ComposedColumn>> entry: composeColumnsRestType.entrySet()) {
-            CreateTableColumnStep step = create.createGlobalTemporaryTable("entry"+ UUID.randomUUID().getMostSignificantBits());
+            String tableName = entry.getKey() + "-" + UUID.randomUUID().getMostSignificantBits();
+            tables.add(tableName);
+            CreateTableColumnStep step = create.createGlobalTemporaryTable(tableName);
             entry.getValue().forEach(composedColumn -> step.column(composedColumn.getLabel(), INTEGER));
             step.execute();
         }
+        return tables;
     }
 
     private Set<ComposedColumn> findComposeColumns(Set<String> allColumnsInQuery, DataSource dataSource) {

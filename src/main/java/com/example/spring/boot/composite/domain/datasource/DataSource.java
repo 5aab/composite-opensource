@@ -2,6 +2,7 @@ package com.example.spring.boot.composite.domain.datasource;
 
 import lombok.Data;
 
+import java.util.Optional;
 import java.util.Set;
 
 import static java.util.stream.Collectors.toSet;
@@ -25,5 +26,14 @@ public class DataSource {
 
     public boolean isRestType(String sourceName) {
         return getRestTypeSources().stream().anyMatch(s -> sourceName.equals(s.getName()));
+    }
+
+    public Connection getConnectionDetails(String sourceName){
+        Optional<Source> matchingSource = source.stream().filter(s->s.getName().equals(sourceName)).findFirst();
+        if(matchingSource.isPresent()){
+            return matchingSource.get().getConnection();
+        }else{
+            throw new RuntimeException("Source Not found :"+sourceName);
+        }
     }
 }

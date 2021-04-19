@@ -35,7 +35,7 @@
         <column name="cover_glass_items" label="cover_glass_items" type="String"/>
         <column name="cover_interior_items" label="cover_interior_items" type="String"/>
         <connection type="restConnection">
-            <url></url>
+            <url>http://localhost:9090/insurance/query</url>
             <userId></userId>
             <password></password>
             <authType></authType>
