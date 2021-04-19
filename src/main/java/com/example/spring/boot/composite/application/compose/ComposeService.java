@@ -12,8 +12,7 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.google.common.collect.Sets;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jooq.CreateTableColumnStep;
-import org.jooq.DSLContext;
+import org.jooq.*;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -22,11 +21,9 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toSet;
@@ -52,7 +49,8 @@ public class ComposeService {
                 .execute();
 
         create.dropTemporaryTableIfExists("PUBLIC.g_book_archive");
-        System.out.println(create.meta().getTables());
+        List<Table<?>> tables = create.meta().getTables("g_book_archive");
+        System.out.println(tables);
         return "temporary table created";
     }
 
@@ -82,14 +80,29 @@ public class ComposeService {
             RestConnection connection = (RestConnection)dataSource.getConnectionDetails(tableKey);
 
             ResponseEntity<String> response = restTemplate.exchange(connection.getUrl(), HttpMethod.GET, null,  new ParameterizedTypeReference<String>(){});
+            Set<Map<String, Object>> data;
             try {
                 ObjectMapper mapper = new ObjectMapper();
-                Set ma = mapper.readValue(response.getBody(), new TypeReference<Set<Map<String, Object>>>(){});
+                data = mapper.readValue(response.getBody(), new TypeReference<Set<Map<String, Object>>>() {});
             } catch (JsonProcessingException e) {
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
+            insertData(tempTable, data, composeColumnsRestType);
             log.info("here it is{}",response);
 
+        }
+    }
+
+    private void insertData(String tempTable, Set<Map<String, Object>> data, Map<String, List<ComposedColumn>> composeColumnsRestType) {
+        Optional<Table<?>> table = create.meta().getTables(tempTable).stream().findFirst();
+        List<ComposedColumn> composedColumns = composeColumnsRestType.get(tempTable);
+        Set<String> columnLabels = composedColumns.stream().map(composedColumn -> composedColumn.getLabel()).collect(toSet());
+        if(table.isPresent()){
+            Collection<? extends Field<?>> fields = columnLabels.stream()
+                    .map(label -> table.get().field(label)).collect(Collectors.toCollection(HashSet::new));
+            create.insertInto(table.get(), fields).values(data);
+        }else{
+            throw new RuntimeException("Table not found :"+table);
         }
     }
 
