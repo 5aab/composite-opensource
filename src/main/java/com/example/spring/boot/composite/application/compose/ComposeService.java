@@ -2,6 +2,7 @@ package com.example.spring.boot.composite.application.compose;
 
 import com.example.spring.boot.composite.domain.datasource.ComposedColumn;
 import com.example.spring.boot.composite.domain.datasource.DataSource;
+import com.example.spring.boot.composite.domain.datasource.Joins;
 import com.example.spring.boot.composite.domain.datasource.RestConnection;
 import com.example.spring.boot.composite.domain.query.Query;
 import com.example.spring.boot.composite.domain.query.WhereCondition;
@@ -22,11 +23,11 @@ import org.springframework.web.client.RestTemplate;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.toSet;
+import static java.util.stream.Collectors.*;
 import static org.jooq.impl.SQLDataType.INTEGER;
 
 @Slf4j
@@ -54,23 +55,39 @@ public class ComposeService {
         return "temporary table created";
     }
 
-    public void queryData(Query query) {
-
+    public Result<Record> queryData(Query query) {
         try {
             DataSource dataSource = xmlMapper.readValue(new File("C:\\FAST\\ws\\composite-opensource\\src\\main\\resources\\DataSource.xml"), DataSource.class);
             Set<String> allColumnsInQuery = findAllColumnsInQuery(query);
-            findMatchColumnInRestSource(allColumnsInQuery, dataSource);
+            return findMatchColumnInRestSource(allColumnsInQuery, dataSource);
         } catch (IOException e) {
             log.error("Error while reading datasource", e);
+            throw new RuntimeException(e);
         }
+
     }
 
-    private void findMatchColumnInRestSource(Set<String> allColumnsInQuery, DataSource dataSource) {
+    private Result<Record> findMatchColumnInRestSource(Set<String> allColumnsInQuery, DataSource dataSource) {
         Set<ComposedColumn> composeColumns = findComposeColumns(allColumnsInQuery, dataSource);
         Map<String, List<ComposedColumn>> composeColumnsRestType = composeColumns.stream().filter(c -> dataSource.isRestType(c.getSourceName())).collect(groupingBy(ComposedColumn::getSourceName));
         Map<String, List<ComposedColumn>> composeColumnsDatabaseType = composeColumns.stream().filter(Predicate.not(c -> dataSource.isRestType(c.getSourceName()))).collect(groupingBy(ComposedColumn::getSourceName));
         Set<String> tempTables = createTempTables(composeColumnsRestType);
         fillTablesWithData(tempTables, composeColumnsRestType, dataSource);
+        return queryDataFromTables(dataSource, tempTables);
+    }
+
+    private Result<Record> queryDataFromTables(DataSource dataSource, Set<String> tempTables) {
+        Joins joins = dataSource.getJoins();
+        SelectSelectStep<Record> select = create.select();
+        joins.getJoin().forEach(j -> select.from(resolve(j.getFromSource(), tempTables)).naturalJoin(resolve(j.getToSource(), tempTables)));
+        Result<Record> result = select.fetch();
+        log.info("Records {}", result);
+        return result;
+    }
+
+    private String resolve(String fromSource, Set<String> tempTables) {
+        Map<String, String> map = tempTables.stream().collect(toMap(this::extractTableKey, Function.identity()));
+        return map.containsKey(fromSource) ? map.get(fromSource) : fromSource;
     }
 
     private void fillTablesWithData(Set<String> tempTables, Map<String, List<ComposedColumn>> composeColumnsRestType, DataSource dataSource) {

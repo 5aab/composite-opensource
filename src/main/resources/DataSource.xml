@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <DATASOURCE>
-    <source name="car" type="database">
+    <source name="vehicle" type="database">
         <column name="name" label="name" type="String"/>
         <column name="id" label="id" type="String"/>
         <column name="color" label="color" type="String"/>
@@ -42,16 +42,16 @@
         </connection>
     </source>
     <joins>
-        <join fromSource="car" toSource="insurance" fromColumn="insurance_id" toColumn="id"/>
+        <join fromSource="vehicle" toSource="insurance" fromColumn="insurance_id" toColumn="id"/>
     </joins>
     <compose>
-        <composedColumns sourceName="car" name="name" label="car_name" type="String"/>
-        <composedColumns sourceName="car" name="id" label="id" type="String"/>
-        <composedColumns sourceName="car" name="color" label="color" type="String"/>
-        <composedColumns sourceName="car" name="seats" label="seats" type="String"/>
-        <composedColumns sourceName="car" name="capacity" label="capacity" type="String"/>
-        <composedColumns sourceName="car" name="engine" label="engine" type="String"/>
-        <composedColumns sourceName="car" name="power" label="power" type="String"/>
+        <composedColumns sourceName="vehicle" name="name" label="car_name" type="String"/>
+        <composedColumns sourceName="vehicle" name="id" label="id" type="String"/>
+        <composedColumns sourceName="vehicle" name="color" label="color" type="String"/>
+        <composedColumns sourceName="vehicle" name="seats" label="seats" type="String"/>
+        <composedColumns sourceName="vehicle" name="capacity" label="capacity" type="String"/>
+        <composedColumns sourceName="vehicle" name="engine" label="engine" type="String"/>
+        <composedColumns sourceName="vehicle" name="power" label="power" type="String"/>
         <composedColumns sourceName="insurance" name="name" label="insurance_name" type="String"/>
         <composedColumns sourceName="insurance" name="id" label="id" type="String"/>
         <composedColumns sourceName="insurance" name="cost" label="cost" type="String"/>
