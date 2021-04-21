@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @Data
-@EqualsAndHashCode(of = "label")
+@EqualsAndHashCode(of = {"sourceName", "label"})
 public class ComposedColumn {
     @JacksonXmlProperty(isAttribute = true)
     private String name;

@@ -61,34 +61,36 @@ public class ComposeService {
             Set<String> allColumnsInQuery = findAllColumnsInQuery(query);
             findMatchColumnInRestSource(allColumnsInQuery, dataSource);
         } catch (IOException e) {
-            log.error("Error while reading datasource",e);
+            log.error("Error while reading datasource", e);
         }
     }
 
     private void findMatchColumnInRestSource(Set<String> allColumnsInQuery, DataSource dataSource) {
         Set<ComposedColumn> composeColumns = findComposeColumns(allColumnsInQuery, dataSource);
-        Map<String, List<ComposedColumn>> composeColumnsRestType = composeColumns.stream().filter(c->dataSource.isRestType(c.getSourceName())).collect(groupingBy(ComposedColumn::getSourceName));
-        Map<String, List<ComposedColumn>> composeColumnsDatabaseType = composeColumns.stream().filter(Predicate.not(c->dataSource.isRestType(c.getSourceName()))).collect(groupingBy(ComposedColumn::getSourceName));
+        Map<String, List<ComposedColumn>> composeColumnsRestType = composeColumns.stream().filter(c -> dataSource.isRestType(c.getSourceName())).collect(groupingBy(ComposedColumn::getSourceName));
+        Map<String, List<ComposedColumn>> composeColumnsDatabaseType = composeColumns.stream().filter(Predicate.not(c -> dataSource.isRestType(c.getSourceName()))).collect(groupingBy(ComposedColumn::getSourceName));
         Set<String> tempTables = createTempTables(composeColumnsRestType);
         fillTablesWithData(tempTables, composeColumnsRestType, dataSource);
     }
 
     private void fillTablesWithData(Set<String> tempTables, Map<String, List<ComposedColumn>> composeColumnsRestType, DataSource dataSource) {
-        for(String tempTable: tempTables) {
+        for (String tempTable : tempTables) {
             String tableKey = tempTable.substring(0, tempTable.indexOf("-"));
             List<ComposedColumn> composedColumns = composeColumnsRestType.get(tableKey);
-            RestConnection connection = (RestConnection)dataSource.getConnectionDetails(tableKey);
+            RestConnection connection = (RestConnection) dataSource.getConnectionDetails(tableKey);
 
-            ResponseEntity<String> response = restTemplate.exchange(connection.getUrl(), HttpMethod.GET, null,  new ParameterizedTypeReference<String>(){});
+            ResponseEntity<String> response = restTemplate.exchange(connection.getUrl(), HttpMethod.GET, null, new ParameterizedTypeReference<String>() {
+            });
             Set<Map<String, Object>> data;
             try {
                 ObjectMapper mapper = new ObjectMapper();
-                data = mapper.readValue(response.getBody(), new TypeReference<Set<Map<String, Object>>>() {});
+                data = mapper.readValue(response.getBody(), new TypeReference<Set<Map<String, Object>>>() {
+                });
             } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             }
             insertData(tempTable, data, composeColumnsRestType);
-            log.info("here it is{}",response);
+            log.info("here it is{}", response);
 
         }
     }
@@ -96,23 +98,23 @@ public class ComposeService {
     private void insertData(String tempTable, Set<Map<String, Object>> data, Map<String, List<ComposedColumn>> composeColumnsRestType) {
         Optional<Table<?>> table = create.meta().getTables(tempTable).stream().findFirst();
         List<ComposedColumn> composedColumns = composeColumnsRestType.get(extractTableKey(tempTable));
-        Set<String> columnLabels = composedColumns.stream().map(composedColumn -> composedColumn.getLabel()).collect(toSet());
-        if(table.isPresent()){
-            Collection<? extends Field<?>> fields = columnLabels.stream()
-                    .map(label -> table.get().field(label)).collect(Collectors.toCollection(HashSet::new));
+        if (table.isPresent()) {
+            Collection<? extends Field<?>> fields = composedColumns.stream()
+                    .map(c -> table.get().field(c.getLabel())).collect(Collectors.toCollection(ArrayList::new));
+
             List<List<Object>> values = new ArrayList<>();
-            for(Map<String, Object> record : data){
+            for (Map<String, Object> record : data) {
                 List<Object> value = new ArrayList<>();
-                for(ComposedColumn composedColumn : composedColumns){
-                    value.add(record.get(composedColumn.getName()));
+                for (ComposedColumn composedColumn : composedColumns) {
+                    value.add(String.valueOf(record.get(composedColumn.getName())));
                 }
                 values.add(value);
             }
             InsertValuesStepN<?> insertValuesStepN = create.insertInto(table.get(), fields);
             values.forEach(domino -> insertValuesStepN.values(domino));
             insertValuesStepN.execute();
-        }else{
-            throw new RuntimeException("Table not found :"+table);
+        } else {
+            throw new RuntimeException("Table not found :" + table);
         }
     }
 
@@ -122,7 +124,7 @@ public class ComposeService {
 
     private Set<String> createTempTables(Map<String, List<ComposedColumn>> composeColumnsRestType) {
         Set<String> tables = Sets.newHashSet();
-        for(Map.Entry<String, List<ComposedColumn>> entry: composeColumnsRestType.entrySet()) {
+        for (Map.Entry<String, List<ComposedColumn>> entry : composeColumnsRestType.entrySet()) {
             String tableName = entry.getKey() + "-" + UUID.randomUUID().getMostSignificantBits();
             tables.add(tableName);
             CreateTableColumnStep step = create.createGlobalTemporaryTable(tableName);
