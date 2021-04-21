@@ -29,5 +29,8 @@ public class Insurance implements Serializable {
     private String coverPlasticItems;
     private String coverGlassItems;
     private String coverInteriorItems;
+    private String cost;
+    private String expiry;
+    private String name;
 
 }

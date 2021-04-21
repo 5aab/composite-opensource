@@ -95,15 +95,29 @@ public class ComposeService {
 
     private void insertData(String tempTable, Set<Map<String, Object>> data, Map<String, List<ComposedColumn>> composeColumnsRestType) {
         Optional<Table<?>> table = create.meta().getTables(tempTable).stream().findFirst();
-        List<ComposedColumn> composedColumns = composeColumnsRestType.get(tempTable);
+        List<ComposedColumn> composedColumns = composeColumnsRestType.get(extractTableKey(tempTable));
         Set<String> columnLabels = composedColumns.stream().map(composedColumn -> composedColumn.getLabel()).collect(toSet());
         if(table.isPresent()){
             Collection<? extends Field<?>> fields = columnLabels.stream()
                     .map(label -> table.get().field(label)).collect(Collectors.toCollection(HashSet::new));
-            create.insertInto(table.get(), fields).values(data);
+            List<List<Object>> values = new ArrayList<>();
+            for(Map<String, Object> record : data){
+                List<Object> value = new ArrayList<>();
+                for(ComposedColumn composedColumn : composedColumns){
+                    value.add(record.get(composedColumn.getName()));
+                }
+                values.add(value);
+            }
+            InsertValuesStepN<?> insertValuesStepN = create.insertInto(table.get(), fields);
+            values.forEach(domino -> insertValuesStepN.values(domino));
+            insertValuesStepN.execute();
         }else{
             throw new RuntimeException("Table not found :"+table);
         }
+    }
+
+    private String extractTableKey(String tempTable) {
+        return tempTable.substring(0, tempTable.indexOf("-"));
     }
 
     private Set<String> createTempTables(Map<String, List<ComposedColumn>> composeColumnsRestType) {
