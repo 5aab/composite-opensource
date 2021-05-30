@@ -81,11 +81,7 @@ public class ComposeService {
 
     private String queryDataFromTables(Query query, DataSource dataSource, Set<String> tempTables) {
         Joins joins = dataSource.getJoins();
-
-        final List<Field<?>> fields = new ArrayList<>();
-        //fields.add(field(name("VEHICLE.ID"), String.class).as("id"));
-        fields.add(field(name("ID")));
-        fields.add(field(name("NAME"), String.class));
+        final List<Field<?>> fields = getSelectClauseColumns(query);
         SelectSelectStep<Record> select = create.select(fields);
         //select.from(table(name("BOOK")));
         joins.getJoin().forEach(j -> select.from(resolve(j.getFromSource(), tempTables)).naturalJoin(resolve(j.getToSource(), tempTables)));
@@ -173,5 +169,9 @@ public class ComposeService {
 
     private <T, R> R getSelectClauseColumns(Query query, Collector<String, ?, R> collector) {
         return query.getProperties().stream().map(String::toLowerCase).collect(collector);
+    }
+
+    private List<Field<?>> getSelectClauseColumns(Query query) {
+        return query.getProperties().stream().map(String::toUpperCase).map(column -> field(name(column), String.class)).collect(toList());
     }
 }
