@@ -25,9 +25,12 @@ import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.*;
+import static org.jooq.impl.DSL.field;
+import static org.jooq.impl.DSL.name;
 import static org.jooq.impl.SQLDataType.INTEGER;
 
 @Slf4j
@@ -59,7 +62,7 @@ public class ComposeService {
         try {
             DataSource dataSource = xmlMapper.readValue(new File("C:\\FAST\\ws\\composite-opensource\\src\\main\\resources\\DataSource.xml"), DataSource.class);
             Set<String> allColumnsInQuery = findAllColumnsInQuery(query);
-            return findMatchColumnInRestSource(allColumnsInQuery, dataSource);
+            return findMatchColumnInRestSource(query, allColumnsInQuery, dataSource);
         } catch (IOException e) {
             log.error("Error while reading datasource", e);
             throw new RuntimeException(e);
@@ -67,18 +70,24 @@ public class ComposeService {
 
     }
 
-    private String findMatchColumnInRestSource(Set<String> allColumnsInQuery, DataSource dataSource) {
+    private String findMatchColumnInRestSource(Query query, Set<String> allColumnsInQuery, DataSource dataSource) {
         Set<ComposedColumn> composeColumns = findComposeColumns(allColumnsInQuery, dataSource);
         Map<String, List<ComposedColumn>> composeColumnsRestType = composeColumns.stream().filter(c -> dataSource.isRestType(c.getSourceName())).collect(groupingBy(ComposedColumn::getSourceName));
         Map<String, List<ComposedColumn>> composeColumnsDatabaseType = composeColumns.stream().filter(Predicate.not(c -> dataSource.isRestType(c.getSourceName()))).collect(groupingBy(ComposedColumn::getSourceName));
         Set<String> tempTables = createTempTables(composeColumnsRestType);
         fillTablesWithData(tempTables, composeColumnsRestType, dataSource);
-        return queryDataFromTables(dataSource, tempTables);
+        return queryDataFromTables(query, dataSource, tempTables);
     }
 
-    private String queryDataFromTables(DataSource dataSource, Set<String> tempTables) {
+    private String queryDataFromTables(Query query, DataSource dataSource, Set<String> tempTables) {
         Joins joins = dataSource.getJoins();
-        SelectSelectStep<Record> select = create.select();
+
+        final List<Field<?>> fields = new ArrayList<>();
+        //fields.add(field(name("VEHICLE.ID"), String.class).as("id"));
+        fields.add(field(name("ID")));
+        fields.add(field(name("NAME"), String.class));
+        SelectSelectStep<Record> select = create.select(fields);
+        //select.from(table(name("BOOK")));
         joins.getJoin().forEach(j -> select.from(resolve(j.getFromSource(), tempTables)).naturalJoin(resolve(j.getToSource(), tempTables)));
         Result<Record> result = select.fetch();
         log.info("Records {}", result);
@@ -155,18 +164,14 @@ public class ComposeService {
         return dataSource.getCompose().getComposedColumns().stream().filter(c -> allColumnsInQuery.contains(c.getLabel())).collect(toSet());
     }
 
-    /*private boolean retainMatch(Source source, Set<String> allColumnsInQuery) {
-        for(Column column : source.getColumn()){
-            column.getName()
-        }
-        allColumnsInQuery.retainAll(s.)
-        return false;
-    }*/
-
     private Set<String> findAllColumnsInQuery(Query query) {
-        Set<String> selectClauseColumns = query.getProperties().stream().map(String::toLowerCase).collect(toSet());
+        Set<String> selectClauseColumns = getSelectClauseColumns(query, toSet());
         Set<String> whereClauseColumns = query.getCriteria().getMatchAll().stream().map(WhereCondition::getProperty).map(String::toLowerCase).collect(toSet());
         selectClauseColumns.addAll(whereClauseColumns);
         return selectClauseColumns;
+    }
+
+    private <T, R> R getSelectClauseColumns(Query query, Collector<String, ?, R> collector) {
+        return query.getProperties().stream().map(String::toLowerCase).collect(collector);
     }
 }
