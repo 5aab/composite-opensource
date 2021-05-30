@@ -4,6 +4,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import lombok.Data;
 
 import javax.xml.bind.annotation.*;
+import java.util.Locale;
 import java.util.Set;
 
 @Data
@@ -14,8 +15,13 @@ public class Source {
     private Connection connection;
     @JacksonXmlProperty(isAttribute = true)
     private String type;
-    @XmlElement(name="column")
+    @XmlElement(name = "column")
     private Set<Column> column;
+
+    //h2 going nuts with lowercase table name
+    public String getName() {
+        return name.toUpperCase(Locale.ROOT);
+    }
 
 
 }

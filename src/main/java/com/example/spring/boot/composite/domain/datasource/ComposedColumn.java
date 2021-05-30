@@ -4,6 +4,8 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.util.Locale;
+
 @Data
 @EqualsAndHashCode(of = {"sourceName", "label"})
 public class ComposedColumn {
@@ -15,4 +17,8 @@ public class ComposedColumn {
     private String label;
     @JacksonXmlProperty(isAttribute = true)
     private String type;
+
+    public String getSourceName(){
+        return sourceName.toUpperCase(Locale.ROOT);
+    }
 }

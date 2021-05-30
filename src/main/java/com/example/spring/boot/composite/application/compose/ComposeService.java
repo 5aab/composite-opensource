@@ -38,7 +38,7 @@ public class ComposeService {
     private DSLContext create;
     private RestTemplate restTemplate;
     private XmlMapper xmlMapper;
-    //private ObjectMapper mapper;
+    private RandomNumberGenerator randomNumberGenerator;
 
 
     public String create() {
@@ -55,7 +55,7 @@ public class ComposeService {
         return "temporary table created";
     }
 
-    public Result<Record> queryData(Query query) {
+    public String queryData(Query query) {
         try {
             DataSource dataSource = xmlMapper.readValue(new File("C:\\FAST\\ws\\composite-opensource\\src\\main\\resources\\DataSource.xml"), DataSource.class);
             Set<String> allColumnsInQuery = findAllColumnsInQuery(query);
@@ -67,7 +67,7 @@ public class ComposeService {
 
     }
 
-    private Result<Record> findMatchColumnInRestSource(Set<String> allColumnsInQuery, DataSource dataSource) {
+    private String findMatchColumnInRestSource(Set<String> allColumnsInQuery, DataSource dataSource) {
         Set<ComposedColumn> composeColumns = findComposeColumns(allColumnsInQuery, dataSource);
         Map<String, List<ComposedColumn>> composeColumnsRestType = composeColumns.stream().filter(c -> dataSource.isRestType(c.getSourceName())).collect(groupingBy(ComposedColumn::getSourceName));
         Map<String, List<ComposedColumn>> composeColumnsDatabaseType = composeColumns.stream().filter(Predicate.not(c -> dataSource.isRestType(c.getSourceName()))).collect(groupingBy(ComposedColumn::getSourceName));
@@ -76,13 +76,13 @@ public class ComposeService {
         return queryDataFromTables(dataSource, tempTables);
     }
 
-    private Result<Record> queryDataFromTables(DataSource dataSource, Set<String> tempTables) {
+    private String queryDataFromTables(DataSource dataSource, Set<String> tempTables) {
         Joins joins = dataSource.getJoins();
         SelectSelectStep<Record> select = create.select();
         joins.getJoin().forEach(j -> select.from(resolve(j.getFromSource(), tempTables)).naturalJoin(resolve(j.getToSource(), tempTables)));
         Result<Record> result = select.fetch();
         log.info("Records {}", result);
-        return result;
+        return result.formatJSON();
     }
 
     private String resolve(String fromSource, Set<String> tempTables) {
@@ -92,7 +92,7 @@ public class ComposeService {
 
     private void fillTablesWithData(Set<String> tempTables, Map<String, List<ComposedColumn>> composeColumnsRestType, DataSource dataSource) {
         for (String tempTable : tempTables) {
-            String tableKey = tempTable.substring(0, tempTable.indexOf("-"));
+            String tableKey = tempTable.substring(0, tempTable.indexOf("_"));
             List<ComposedColumn> composedColumns = composeColumnsRestType.get(tableKey);
             RestConnection connection = (RestConnection) dataSource.getConnectionDetails(tableKey);
 
@@ -136,13 +136,13 @@ public class ComposeService {
     }
 
     private String extractTableKey(String tempTable) {
-        return tempTable.substring(0, tempTable.indexOf("-"));
+        return tempTable.substring(0, tempTable.indexOf("_"));
     }
 
     private Set<String> createTempTables(Map<String, List<ComposedColumn>> composeColumnsRestType) {
         Set<String> tables = Sets.newHashSet();
         for (Map.Entry<String, List<ComposedColumn>> entry : composeColumnsRestType.entrySet()) {
-            String tableName = entry.getKey() + "-" + UUID.randomUUID().getMostSignificantBits();
+            String tableName = entry.getKey().toUpperCase(Locale.ROOT) + "_" + randomNumberGenerator.nextNonNegative();
             tables.add(tableName);
             CreateTableColumnStep step = create.createGlobalTemporaryTable(tableName);
             entry.getValue().forEach(composedColumn -> step.column(composedColumn.getLabel(), INTEGER));

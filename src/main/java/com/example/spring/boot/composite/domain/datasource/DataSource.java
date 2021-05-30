@@ -25,11 +25,11 @@ public class DataSource {
     }
 
     public boolean isRestType(String sourceName) {
-        return getRestTypeSources().stream().anyMatch(s -> sourceName.equals(s.getName()));
+        return getRestTypeSources().stream().anyMatch(s -> sourceName.equalsIgnoreCase(s.getName()));
     }
 
     public Connection getConnectionDetails(String sourceName){
-        Optional<Source> matchingSource = source.stream().filter(s->s.getName().equals(sourceName)).findFirst();
+        Optional<Source> matchingSource = source.stream().filter(s->s.getName().equalsIgnoreCase(sourceName)).findFirst();
         if(matchingSource.isPresent()){
             return matchingSource.get().getConnection();
         }else{

@@ -3,8 +3,6 @@ package com.example.spring.boot.composite.rest;
 import com.example.spring.boot.composite.application.compose.ComposeService;
 import com.example.spring.boot.composite.domain.query.Query;
 import lombok.AllArgsConstructor;
-import org.jooq.Record;
-import org.jooq.Result;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,7 +24,7 @@ public class ComposeController {
 
     @ResponseBody
     @PostMapping(value = "query")
-    public Result<Record> queryData(@RequestBody Query query) {
+    public String queryData(@RequestBody Query query) {
         return composeService.queryData(query);
     }
 
