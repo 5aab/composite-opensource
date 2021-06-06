@@ -42,7 +42,7 @@
         </connection>
     </source>
     <joins>
-        <join leftSource="insurance" rightSource="vehicle" type="INNER">
+        <join leftSource="insurance" rightSource="vehicle" type="INNER_RIGHT">
             <joinColumn leftColumn="ins_id" rightColumn="insurance_id"/>
         </join>
     </joins>
