@@ -5,6 +5,4 @@ https://medium.com/@tejozarkar/configure-jooq-with-spring-boot-and-postgresql-c3
 https://blog.jooq.org/tag/resultset/nb/n/nj 
 
 
-{"criteria":{"matchAll":[{"property":"expiry","operator":"<=","value":["2020-01-05"]},{"property":"cost","operator":"<=","value":["1000000"]},{"property":"power","operator":">","value":["786 hp"]},{"property":"seats","operator":"=","value":["2"]},{"property":"expiry","operator":">=","value":["2020-01-01"]}]},"requestTag":"request_909876","onBehalfOf":"mahajan","properties":["car_name","cost","color","engine","id","power","insurance_name","seats","capacity"]}
-
-{"criteria":{"matchAll":[{"property":"expiry","operator":"=","value":["2020-01-05"]},{"property":"cost","operator":"=","value":["1000000"]},{"property":"power","operator":"=","value":["786 hp"]},{"property":"seats","operator":"=","value":["2"]},{"property":"expiry","operator":"=","value":["2020-01-01"]}]},"requestTag":"request_909876","onBehalfOf":"mahajan","properties":["name","ON_ROAD_PRICE","color","engine","id","power","seats","capacity"]}
+{"criteria":{"matchAll":[{"property":"expiry","operator":"=","value":["2020-01-05"]},{"property":"cost","operator":"=","value":["1000000"]},{"property":"power","operator":"=","value":["786 hp"]},{"property":"seats","operator":"=","value":["2"]},{"property":"expiry","operator":"=","value":["2020-01-01"]}]},"requestTag":"request_909876","onBehalfOf":"mahajan","properties":["name","ON_ROAD_PRICE","color","engine","id","ins_id","power","seats","capacity","expiry"]}
