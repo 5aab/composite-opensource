@@ -25,11 +25,11 @@
     <source name="insurance" type="rest">
         <column name="name" label="name" type="String"/>
         <column name="id" label="id" type="String"/>
-		<column name="type" label="insurance_type" type="String"/>
+        <column name="type" label="insurance_type" type="String"/>
         <column name="cost" label="cost" type="String"/>
         <column name="expiry" label="expiry" type="String"/>
-		<column name="insuredBy" label="insuredBy" type="String"/>
-		<column name="insuredOn" label="insuredOn" type="String"/>
+        <column name="insuredBy" label="insuredBy" type="String"/>
+        <column name="insuredOn" label="insuredOn" type="String"/>
         <column name="starts_on" label="starts_on" type="String"/>
         <column name="cover_plastic_items" label="cover_plastic_items" type="String"/>
         <column name="cover_glass_items" label="cover_glass_items" type="String"/>
@@ -42,7 +42,9 @@
         </connection>
     </source>
     <joins>
-        <join fromSource="vehicle" toSource="insurance" fromColumn="insurance_id" toColumn="id"/>
+        <join leftSource="vehicle" rightSource="insurance" type="INNER">
+            <joinColumn leftColumn="insurance_id" rightColumn="id"/>
+        </join>
     </joins>
     <compose>
         <composedColumns sourceName="vehicle" name="name" label="car_name" type="String"/>

@@ -84,7 +84,7 @@ public class ComposeService {
         final List<Field<?>> fields = getSelectClauseColumns(query);
         SelectSelectStep<Record> select = create.select(fields);
         //select.from(table(name("BOOK")));
-        joins.getJoin().forEach(j -> select.from(resolve(j.getFromSource(), tempTables)).naturalJoin(resolve(j.getToSource(), tempTables)));
+        joins.getJoin().forEach(j -> select.from(resolve(j.getLeftSource(), tempTables)).naturalJoin(resolve(j.getRightSource(), tempTables)));
         Result<Record> result = select.fetch();
         log.info("Records {}", result);
         return result.formatJSON();

@@ -4,23 +4,24 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import lombok.Data;
 
 import java.util.Locale;
+import java.util.Set;
 
 @Data
 public class Join {
     @JacksonXmlProperty(isAttribute = true)
-    private String toSource;
+    private String rightSource;
     @JacksonXmlProperty(isAttribute = true)
-    private String fromColumn;
+    private String leftSource;
     @JacksonXmlProperty(isAttribute = true)
-    private String fromSource;
+    private JoinType type;
     @JacksonXmlProperty(isAttribute = true)
-    private String toColumn;
+    private Set<JoinColumn> joinColumn;
 
-    public String getFromSource() {
-        return fromSource.toUpperCase(Locale.ROOT);
+    public String getLeftSource() {
+        return leftSource.toUpperCase(Locale.ROOT);
     }
 
-    public String getToSource() {
-        return toSource.toUpperCase(Locale.ROOT);
+    public String getRightSource() {
+        return rightSource.toUpperCase(Locale.ROOT);
     }
 }
