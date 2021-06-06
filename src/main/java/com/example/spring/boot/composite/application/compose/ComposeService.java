@@ -12,6 +12,7 @@ import com.google.common.collect.Sets;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jooq.*;
+import org.jooq.tools.StringUtils;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -111,9 +112,10 @@ public class ComposeService {
     }
 
     private String joinClause(Join join, Set<String> tempTables) {
-        return join.getJoinColumn().stream()
+        return StringUtils.join(join.getJoinColumn().stream()
                 .map(jc -> resolve(join.getLeftSource(), tempTables) + "." + jc.getLeftColumn() + "=" + resolve(join.getRightSource(), tempTables) + "." + jc.getRightColumn())
-                .reduce("", (a, b) -> a + b);
+                .toArray(String[]::new)
+                , " and ").toUpperCase(Locale.ROOT);
     }
 
     private String resolve(String fromSource, Set<String> tempTables) {
