@@ -1,9 +1,7 @@
 package com.example.spring.boot.composite.application.compose;
 
-import com.example.spring.boot.composite.domain.datasource.ComposedColumn;
-import com.example.spring.boot.composite.domain.datasource.DataSource;
-import com.example.spring.boot.composite.domain.datasource.Joins;
-import com.example.spring.boot.composite.domain.datasource.RestConnection;
+import com.example.spring.boot.composite.domain.datasource.JoinType;
+import com.example.spring.boot.composite.domain.datasource.*;
 import com.example.spring.boot.composite.domain.query.Query;
 import com.example.spring.boot.composite.domain.query.WhereCondition;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -84,10 +82,26 @@ public class ComposeService {
         final List<Field<?>> fields = getSelectClauseColumns(query);
         SelectSelectStep<Record> select = create.select(fields);
         //select.from(table(name("BOOK")));
-        joins.getJoin().forEach(j -> select.from(resolve(j.getLeftSource(), tempTables)).naturalJoin(resolve(j.getRightSource(), tempTables)));
+        joinTables(tempTables, joins, select);
         Result<Record> result = select.fetch();
         log.info("Records {}", result);
         return result.formatJSON();
+    }
+
+    private void joinTables(Set<String> tempTables, Joins joins, SelectSelectStep<Record> select) {
+        joins.getJoin().forEach(join -> joinTables(join, tempTables, select));
+    }
+
+    private void joinTables(Join join, Set<String> tempTables, SelectSelectStep<Record> select) {
+        if (JoinType.CARTESIAN.equals(join.getType())) {
+            select.from(resolve(join.getLeftSource(), tempTables)).naturalJoin(resolve(join.getRightSource(), tempTables));
+        } else if (JoinType.INNER_LEFT.equals(join.getType())) {
+            select.from(resolve(join.getLeftSource(), tempTables)).leftJoin(resolve(join.getRightSource(), tempTables));
+        } else if (JoinType.INNER_RIGHT.equals(join.getType())) {
+            select.from(resolve(join.getLeftSource(), tempTables)).rightJoin(resolve(join.getRightSource(), tempTables));
+        } else {
+            select.from(resolve(join.getLeftSource(), tempTables)).innerJoin(resolve(join.getRightSource(), tempTables));
+        }
     }
 
     private String resolve(String fromSource, Set<String> tempTables) {
