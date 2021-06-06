@@ -113,8 +113,8 @@ public class ComposeService {
 
     private String joinClause(Join join, Set<String> tempTables) {
         return StringUtils.join(join.getJoinColumn().stream()
-                .map(jc -> resolve(join.getLeftSource(), tempTables) + "." + jc.getLeftColumn() + "=" + resolve(join.getRightSource(), tempTables) + "." + jc.getRightColumn())
-                .toArray(String[]::new)
+                        .map(jc -> resolve(join.getLeftSource(), tempTables) + "." + jc.getLeftColumn() + "=" + resolve(join.getRightSource(), tempTables) + "." + jc.getRightColumn())
+                        .toArray(String[]::new)
                 , " and ").toUpperCase(Locale.ROOT);
     }
 
