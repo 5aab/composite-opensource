@@ -96,12 +96,24 @@ public class ComposeService {
         if (JoinType.CARTESIAN.equals(join.getType())) {
             select.from(resolve(join.getLeftSource(), tempTables)).naturalJoin(resolve(join.getRightSource(), tempTables));
         } else if (JoinType.INNER_LEFT.equals(join.getType())) {
-            select.from(resolve(join.getLeftSource(), tempTables)).leftJoin(resolve(join.getRightSource(), tempTables));
+            join.getJoinColumn().forEach(jc -> {
+                select.from(resolve(join.getLeftSource(), tempTables)).leftJoin(resolve(join.getRightSource(), tempTables)).on(joinClause(join, tempTables));
+            });
         } else if (JoinType.INNER_RIGHT.equals(join.getType())) {
-            select.from(resolve(join.getLeftSource(), tempTables)).rightJoin(resolve(join.getRightSource(), tempTables));
+            join.getJoinColumn().forEach(jc -> {
+                select.from(resolve(join.getLeftSource(), tempTables)).rightJoin(resolve(join.getRightSource(), tempTables)).on(joinClause(join, tempTables));
+            });
         } else {
-            select.from(resolve(join.getLeftSource(), tempTables)).innerJoin(resolve(join.getRightSource(), tempTables));
+            join.getJoinColumn().forEach(jc -> {
+                select.from(resolve(join.getLeftSource(), tempTables)).innerJoin(resolve(join.getRightSource(), tempTables)).on(joinClause(join, tempTables));
+            });
         }
+    }
+
+    private String joinClause(Join join, Set<String> tempTables) {
+        return join.getJoinColumn().stream()
+                .map(jc -> resolve(join.getLeftSource(), tempTables) + "." + jc.getLeftColumn() + "=" + resolve(join.getRightSource(), tempTables) + "." + jc.getRightColumn())
+                .reduce("", (a, b) -> a + b);
     }
 
     private String resolve(String fromSource, Set<String> tempTables) {
@@ -164,7 +176,7 @@ public class ComposeService {
             String tableName = entry.getKey().toUpperCase(Locale.ROOT) + "_" + randomNumberGenerator.nextNonNegative();
             tables.add(tableName);
             CreateTableColumnStep step = create.createGlobalTemporaryTable(tableName);
-            entry.getValue().forEach(composedColumn -> step.column(composedColumn.getLabel(), INTEGER));
+            entry.getValue().forEach(composedColumn -> step.column(composedColumn.getLabel().toUpperCase(Locale.ROOT), INTEGER));
             step.execute();
         }
         return tables;

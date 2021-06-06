@@ -21,4 +21,5 @@ public class ComposedColumn {
     public String getSourceName(){
         return sourceName.toUpperCase(Locale.ROOT);
     }
+
 }

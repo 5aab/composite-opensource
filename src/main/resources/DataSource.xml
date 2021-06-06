@@ -42,8 +42,8 @@
         </connection>
     </source>
     <joins>
-        <join leftSource="vehicle" rightSource="insurance" type="INNER">
-            <joinColumn leftColumn="insurance_id" rightColumn="id"/>
+        <join leftSource="insurance" rightSource="vehicle" type="INNER">
+            <joinColumn leftColumn="ins_id" rightColumn="insurance_id"/>
         </join>
     </joins>
     <compose>
@@ -55,7 +55,7 @@
         <composedColumns sourceName="vehicle" name="engine" label="engine" type="String"/>
         <composedColumns sourceName="vehicle" name="power" label="power" type="String"/>
         <composedColumns sourceName="insurance" name="name" label="insurance_name" type="String"/>
-        <composedColumns sourceName="insurance" name="id" label="id" type="String"/>
+        <composedColumns sourceName="insurance" name="id" label="ins_id" type="String"/>
         <composedColumns sourceName="insurance" name="cost" label="cost" type="String"/>
         <composedColumns sourceName="insurance" name="expiry" label="expiry" type="String"/>
     </compose>
